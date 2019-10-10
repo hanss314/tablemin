@@ -1,12 +1,12 @@
 CXX=g++
 CXXFLAGS=-Wall -I./include
 LIBFLAGS=-lhidapi-hidraw -ljack
-DEBUGFLAGS=-lasan -pg
+DEBUGFLAGS=-p -g
 
 MODE=normal
 
 INCLUDE=$(wildcard include/*.h)
-SRC=$(wildcard src/*.cc)
+SRC=$(wildcard src/*.cc) $(wildcard src/profile/*.cc)
 OBJ=$(patsubst src/%.cc,obj/%.o,$(SRC))
 OUT=tablemin
 
@@ -31,8 +31,9 @@ debug:
 	make MODE=debug
 
 clean:
-	rm -rf obj/*
+	rm -f obj/**/*.o
+	rm -f obj/*.o
 
 purge:
 	make clean
-	rm -f $(OUT)
+	rm $(OUT)

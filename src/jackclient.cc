@@ -9,7 +9,7 @@ jack_client_t *client;
 
 size_t buffer_position;
 size_t buffer_size;
-jack_default_audio_sample_t* ringbuffer;
+jack_default_audio_sample_t* ringbuffer=NULL;
 
 bool *goflag;
 
@@ -32,14 +32,13 @@ int process(jack_nframes_t nframes, void *arg) {
 	*goflag = true;
     jack_default_audio_sample_t *out;
     out = (jack_default_audio_sample_t*)jack_port_get_buffer(output_port, nframes);
-    memcpy (out, ringbuffer+buffer_position,
-		sizeof(jack_default_audio_sample_t) * (buffer_size-buffer_position));
-    memcpy (out+buffer_size-buffer_position, ringbuffer,
-		sizeof(jack_default_audio_sample_t) * buffer_position);
+    memcpy (out, ringbuffer,
+	    sizeof(jack_default_audio_sample_t) * nframes);
 	return 0;      
 }
 
 jack_client_t *initialize(bool *go_flag){
+    goflag = go_flag;
     jack_status_t status;
     client = jack_client_open("Tablemin", JackNullOption,
                             &status, NULL);
@@ -52,6 +51,8 @@ jack_client_t *initialize(bool *go_flag){
 					 JackPortIsOutput, 0);
     if(output_port==NULL) return NULL;
     if(jack_activate(client)) return NULL;
+    ringbuffer = (float*)malloc(sizeof(float)*jack_get_sample_rate(client));
+    buffer_size = jack_get_buffer_size(client);
     const char **ports = jack_get_ports (client, NULL, NULL,
 				JackPortIsPhysical|JackPortIsInput);
     
@@ -63,10 +64,5 @@ jack_client_t *initialize(bool *go_flag){
 
     free(ports);
     atexit(jack_cleanup);
-    ringbuffer = (float*)malloc(sizeof(float)*jack_get_sample_rate(client));
-    buffer_size = jack_get_buffer_size(client);
-    
-    goflag = go_flag;
-
     return client;
 }

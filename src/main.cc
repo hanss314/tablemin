@@ -8,20 +8,19 @@
 
 #include "profile.h"
 #include "jackclient.h"
+#include "input.h"
 
 #define VID 1386
 #define PID 884
 
-hid_device *tablet;
-Profile *profile;
+hid_device *tablet = NULL;
+InputState *input = NULL;
+Profile *profile = NULL;
 
 void cleanup(void){
-    if(tablet!=NULL){
-       hid_close(tablet);
-    }
-    if(profile!=NULL){
-        delete profile;
-    }
+    if(tablet!=NULL) hid_close(tablet);
+    if(input!=NULL) delete input;
+    if(profile!=NULL) delete profile;
     hid_exit();
     printf("Exiting\n");
 }   
@@ -43,8 +42,15 @@ int main(){
     }
     
     int rate = jack_get_sample_rate(client);
-    profile = new BasicProfile(rate, 440, 880);
-    printf("Success\n");
+    input = new InputState();
+    profile = new ExtratoneProfile(
+        //new BasicProfile(rate, 440, 880),
+        new NoiseProfile(),
+        1, 100
+    );
+    //*profile = new NoiseProfile();
+    profile->setRate(rate);
+    profile->setInput(input);
     while(true){
         if(!shouldgo){
             sleep(1.0/rate);
@@ -52,7 +58,9 @@ int main(){
         }
         int status = hid_read(tablet, data, 12);
         if(status==0){
-            profile->setState(data);
+            input->setState(data);
+            profile->onStateUpdate();
+            //profile->sendEvent(data);
         }
         float next = profile->getNext();
         append_buffer(next);

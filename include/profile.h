@@ -1,29 +1,52 @@
-#define MAX_X 15200
-#define MAX_Y 9500
-#define MAX_P 4095
+#include "input.h"
+
+#ifndef PROFILE_H
+#define PROFILE_H
 
 class Profile{
+    protected:
+        int rate;
+        InputState *state;
+
     public:
-    virtual void setState(const unsigned char *state){};
     virtual float getNext(){ return 0; };
     virtual ~Profile() {};
+
+    virtual void setRate(int);
+    virtual void setInput(InputState *input);
+    virtual void onStateUpdate(){};
 };
 
 class BasicProfile : public Profile{
     protected:
        float i, start, end, vol, voltarget, di;
-       int rate;
-    public:     
-    BasicProfile(int rate, float start, float end){
-        this->rate = rate;
-        this->start = start;
-        this->end = end;
 
-        this->i=0.0;
-        this->vol=0.0;
-        this->voltarget=0.0;
-        this->di=0.0;
-    }
-    void setState(const unsigned char *state);
-    float getNext();
+    public:     
+    BasicProfile(int rate, float start, float end);
+    float getNext() override;
+    void onStateUpdate() override;
 };
+
+//class TimbreProfile : public Profile{};
+class ExtratoneProfile : public Profile{
+    protected:
+        float i, start, end, di;
+        Profile *base;
+
+    public:
+    ExtratoneProfile(Profile *base, float start, float end);
+    ~ExtratoneProfile();
+    float getNext() override;
+
+    void setRate(int) override;
+    void setInput(InputState *input) override;
+    void onStateUpdate() override;
+};
+
+
+class NoiseProfile : public Profile{
+    public:
+    float getNext() override;
+};
+
+#endif
