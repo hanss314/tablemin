@@ -5,16 +5,14 @@
 #include "input.h"
 
 ExtratoneProfile::
-ExtratoneProfile(Profile *base, float start, float end){
+ExtratoneProfile(Profile *base, float start, float end)
+:ContainerProfile(base){
     this->start = start;
     this->end = end;
     this->base = base;
 
     this->i=0.0;
     this->di=0.0;
-}
-ExtratoneProfile::~ExtratoneProfile(){
-    delete base;
 }
 
 
@@ -25,20 +23,13 @@ float ExtratoneProfile::getNext(){
     return base->getNext();
 }
 
-void ExtratoneProfile::setRate(int r){
-    Profile::setRate(r);
-    base->setRate(r);
-}
-
-
-void ExtratoneProfile::setInput(InputState *r){
-    Profile::setInput(r);
-    base->setInput(r);
-}
-
 void ExtratoneProfile::onStateUpdate(){
+    if(state->ypercent > 0.95){
+        di=0;
+        this->i=M_PI;
+    }
     float freq = start * pow(end/start, 1-state->ypercent);
     di = 2*M_PI*freq;
     di /= (float)rate;
-    base->onStateUpdate();
+    ContainerProfile::onStateUpdate();
 }

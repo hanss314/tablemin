@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <math.h>
 
 #include <hidapi/hidapi.h>
 #include <jack/jack.h>
@@ -9,6 +10,7 @@
 #include "profile.h"
 #include "jackclient.h"
 #include "input.h"
+#include "util.h"
 
 #define VID 1386
 #define PID 884
@@ -42,15 +44,26 @@ int main(){
     }
     
     int rate = jack_get_sample_rate(client);
-    input = new InputState();
-    profile = new ExtratoneProfile(
-        //new BasicProfile(rate, 440, 880),
-        new NoiseProfile(),
+    /*profile = new ExtratoneProfile(
+        new DiscreteProfile(440, 880),
+        //new NoiseProfile(),
         1, 100
+    );*/
+    input = new InputState();
+    /*profile = new EnablerProfile(
+        new BasicProfile(220, 880), 65
+    );*/
+    int keys[] = {52,39,53,40,54,55,42,56,43,57,58,45,59,46,60,0};
+    profile = new MixerProfile(
+        new KeyboardProfile(list_to_freqmap(keys, 440, pow(2.0, 1.0/12.0))),
+        new BasicProfile(220, 880)
     );
-    //*profile = new NoiseProfile();
-    profile->setRate(rate);
+    //profile = new KeyboardProfile(list_to_freqmap(keys, 440, pow(2.0, 1.0/12.0)));
+
+    //profile = new DiscreteProfile(440, 880);
+    //profile = new NoiseProfile();
     profile->setInput(input);
+    profile->setRate(rate);
     while(true){
         if(!shouldgo){
             sleep(1.0/rate);
@@ -61,6 +74,13 @@ int main(){
             input->setState(data);
             profile->onStateUpdate();
             //profile->sendEvent(data);
+        }
+        for(int i=0; i<input->changecount; i++){
+            profile->onKbEvent(
+                input->changed[i], 
+                input->pressedkeys[input->changed[i]]
+            );
+            input->changecount = 0;
         }
         float next = profile->getNext();
         append_buffer(next);

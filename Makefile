@@ -1,7 +1,7 @@
 CXX=g++
 CXXFLAGS=-Wall -I./include
-LIBFLAGS=-lhidapi-hidraw -ljack
-DEBUGFLAGS=-p -g
+LIBFLAGS=-lhidapi-hidraw -pthread -ljack -lX11
+DEBUGFLAGS=-p -g -lasan
 
 MODE=normal
 

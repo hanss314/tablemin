@@ -1,7 +1,7 @@
-#include "input.h"
-
 #ifndef PROFILE_H
 #define PROFILE_H
+
+#include "input.h"
 
 class Profile{
     protected:
@@ -15,6 +15,7 @@ class Profile{
     virtual void setRate(int);
     virtual void setInput(InputState *input);
     virtual void onStateUpdate(){};
+    virtual void onKbEvent(int key, bool down){};
 };
 
 class BasicProfile : public Profile{
@@ -22,31 +23,97 @@ class BasicProfile : public Profile{
        float i, start, end, vol, voltarget, di;
 
     public:     
-    BasicProfile(int rate, float start, float end);
+    BasicProfile(float start, float end);
     float getNext() override;
     void onStateUpdate() override;
 };
 
-//class TimbreProfile : public Profile{};
-class ExtratoneProfile : public Profile{
+class KeyboardProfile : public Profile{
     protected:
-        float i, start, end, di;
-        Profile *base;
+        float *notemap;
+        int notecount;
+        int usednotes[256];
+        float noteis[256];
+        
 
-    public:
-    ExtratoneProfile(Profile *base, float start, float end);
-    ~ExtratoneProfile();
+    public:     
+    KeyboardProfile(float *notemap);
+    ~KeyboardProfile();
+
     float getNext() override;
+    void onKbEvent(int, bool) override;
+    void setRate(int) override;
+};
 
+class MixerProfile : public Profile{
+    protected:
+        Profile *a;
+        Profile *b;
+        float mix;
+    public:
+    MixerProfile(Profile *a, Profile *b);
+    ~MixerProfile();
+
+    float getNext() override;
     void setRate(int) override;
     void setInput(InputState *input) override;
     void onStateUpdate() override;
+    void onKbEvent(int, bool) override;
 };
 
-
+//class TimbreProfile : public Profile{};
 class NoiseProfile : public Profile{
     public:
     float getNext() override;
 };
 
+class DiscreteProfile : public Profile{
+    protected:
+       float i, start, end, vol, voltarget, di;
+       int quanta; 
+
+    public:     
+    DiscreteProfile(float start, float end);
+    float getNext() override;
+    void onStateUpdate() override;
+};
+
+class ContainerProfile : public Profile{
+    protected:
+        Profile *base;
+    ContainerProfile(Profile *base);
+    ~ContainerProfile();
+
+    void onKbEvent(int, bool) override;
+    void setRate(int) override;
+    void setInput(InputState *input) override;
+    void onStateUpdate() override;
+};
+
+class ExtratoneProfile : public ContainerProfile{
+    protected:
+        float i, start, end, di;
+
+    public:
+    ExtratoneProfile(Profile *base, float start, float end);
+    float getNext() override;
+    void onStateUpdate() override;
+};
+
+class EnablerProfile : public ContainerProfile{
+    protected:
+        int enablekey;
+
+    public:
+    EnablerProfile(Profile *base, int key);
+    float getNext() override;
+};
+class MuterProfile : public ContainerProfile{
+    protected:
+        int mutekey;
+
+    public:
+    MuterProfile(Profile *base, int key);
+    float getNext() override;
+};
 #endif

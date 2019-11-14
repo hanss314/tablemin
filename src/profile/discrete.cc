@@ -2,10 +2,11 @@
 
 #include "profile.h"
 
-BasicProfile::BasicProfile(float start, float end){
+DiscreteProfile::DiscreteProfile(float start, float end){
     this->rate = rate;
     this->start = start;
     this->end = end;
+    this->quanta = (int)12*log2f(end/start); 
 
     this->i=0.0;
     this->vol=0.0;
@@ -13,7 +14,8 @@ BasicProfile::BasicProfile(float start, float end){
     this->di=0.0;
 }
 
-float BasicProfile::getNext(){
+float DiscreteProfile::getNext(){
+    if(!state->down) return 0.0;
     this->i +=di;
     this->i = fmod(this->i, 2*M_PI);
     float dvol = this->voltarget - this->vol;
@@ -23,8 +25,9 @@ float BasicProfile::getNext(){
     return vol*sin(this->i); 
 }
 
-void BasicProfile::onStateUpdate(){
-    float freq = start * pow(end/start, state->xpercent);
+void DiscreteProfile::onStateUpdate(){
+    float xpercent = (float)((int)(quanta*state->xpercent))/quanta;
+    float freq = start * pow(end/start, xpercent);
     di = 2*M_PI*freq/rate;
-    voltarget = state->ppercent * state->ppercent;
+    voltarget = state->ppercent;// * state->ppercent;
 }
