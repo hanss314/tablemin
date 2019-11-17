@@ -2,6 +2,7 @@
 #define PROFILE_H
 
 #include "input.h"
+#include "funcs.h"
 
 class Profile{
     protected:
@@ -24,6 +25,19 @@ class BasicProfile : public Profile{
 
     public:     
     BasicProfile(float start, float end);
+    float getNext() override;
+    void onStateUpdate() override;
+};
+
+class WaveProfile : public Profile{
+    protected:
+       bool play;
+       float i, start, end, vol, voltarget, di, reltimer, notetimer;
+       WaveformFunc *wave;
+       ADSRFunc *adsr;
+
+    public:     
+    WaveProfile(float start, float end, WaveformFunc *wave, ADSRFunc *adsr);
     float getNext() override;
     void onStateUpdate() override;
 };

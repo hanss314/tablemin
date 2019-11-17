@@ -11,9 +11,12 @@
 #include "jackclient.h"
 #include "input.h"
 #include "util.h"
+#include "funcs.h"
 
 #define VID 1386
 #define PID 884
+
+#define THRESHOLD(x) x>1?1.0:(x<-1?-1.0:x)
 
 hid_device *tablet = NULL;
 InputState *input = NULL;
@@ -53,15 +56,20 @@ int main(){
     /*profile = new EnablerProfile(
         new BasicProfile(220, 880), 65
     );*/
-    int keys[] = {52,39,53,40,54,55,42,56,43,57,58,45,59,46,60,0};
+    /*int keys[] = {52,39,53,40,54,55,42,56,43,57,58,45,59,46,60,0};
     profile = new MixerProfile(
         new KeyboardProfile(list_to_freqmap(keys, 440, pow(2.0, 1.0/12.0))),
         new BasicProfile(220, 880)
-    );
+    );*/
     //profile = new KeyboardProfile(list_to_freqmap(keys, 440, pow(2.0, 1.0/12.0)));
 
     //profile = new DiscreteProfile(440, 880);
     //profile = new NoiseProfile();
+    profile = new WaveProfile(220, 880,
+        new WaveformFunc(&simplesin, 2*M_PI),
+        new ADSRFunc(&simpleinit, &simpledecay, 1.2/1000.0, 1.0/10.0)
+    );
+
     profile->setInput(input);
     profile->setRate(rate);
     while(true){
@@ -83,7 +91,7 @@ int main(){
             input->changecount = 0;
         }
         float next = profile->getNext();
-        append_buffer(next);
+        append_buffer(THRESHOLD(next));
         /*
         i++;
         if(i >= 512){

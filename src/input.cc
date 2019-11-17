@@ -48,7 +48,7 @@ InputState::InputState(){
     ypercent=0.0;
     ppercent=0.0;
     running = true;
-    
+    down = false;
     kbthread = new std::thread(&InputState::kbDaemon, this);
 }
 
