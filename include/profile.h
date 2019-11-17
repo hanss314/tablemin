@@ -34,10 +34,12 @@ class WaveProfile : public Profile{
        bool play;
        float i, start, end, vol, voltarget, di, reltimer, notetimer;
        WaveformFunc *wave;
-       ADSRFunc *adsr;
+       AttackFunc *att;
+       ReleaseFunc *rel;
 
     public:     
-    WaveProfile(float start, float end, WaveformFunc *wave, ADSRFunc *adsr);
+    WaveProfile(float start, float end, 
+                WaveformFunc *wave, AttackFunc *att, ReleaseFunc *rel);
     float getNext() override;
     void onStateUpdate() override;
 };

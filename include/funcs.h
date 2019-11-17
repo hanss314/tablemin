@@ -6,7 +6,7 @@
 
 class WaveformFunc {
     private:
-        float (*wave)(float);
+        std::function<float(float)> wave;
     public:
         float period;
 
@@ -21,28 +21,33 @@ class WaveformFunc {
     }
 };
 
-class ADSRFunc {
+class AttackFunc {
     private:
-        float (*attdec)(float); float (*release)(float);
+        std::function <float(float)> f;
     public:
-        float attlen, rellen;
-    ADSRFunc(float (*init)(float), 
-             float (*end)(float), 
-             float initlen, float endlen){
-        attdec = init;
-        release = end;
-        attlen = initlen;
-        rellen = endlen;
+        float flen;
+    AttackFunc(std::function<float(float)> f, float flen){
+        this->f = f;
+        this->flen = flen;
     }
-
-    float getinit(float i){
-        if(i>attlen) return 1;
-        return attdec(i);
+    float operator()(float i){
+        if(i>flen) return 1;
+        return f(i);
     }
+};
 
-    float getend(float i){
-        if(i>rellen) return 0;
-        return release(i);
+class ReleaseFunc {
+    private:
+        std::function <float(float)> f;
+    public:
+        float flen;
+    ReleaseFunc(std::function<float(float)> f, float flen){
+        this->f = f;
+        this->flen = flen;
+    }
+    float operator()(float i){
+        if(i>flen) return 0;
+        return f(i);
     }
 };
 

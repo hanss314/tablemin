@@ -3,11 +3,14 @@
 #include "profile.h"
 
 WaveProfile::WaveProfile(float start, float end, 
-                         WaveformFunc *wave, ADSRFunc *adsr){
+                         WaveformFunc *wave, 
+                         AttackFunc *att,
+                         ReleaseFunc *rel){
     this->start = start;
     this->end = end;
     this->wave = wave;
-    this->adsr = adsr;
+    this->att = att;
+    this->rel = rel;
 
     this->play = false;
     this->i=0.0;
@@ -26,13 +29,13 @@ float WaveProfile::getNext(){
     float a = 1.0;
     if(state->down){
         notetimer += 1.0/rate;
-        if(notetimer<adsr->attlen) a=adsr->getinit(notetimer);
+        if(notetimer<att->flen) a=(*att)(notetimer);
     } else {
         reltimer += 1.0/rate;
-        if(reltimer>adsr->rellen){
+        if(reltimer>rel->flen){
             play = false; return 0;
         }
-        a=adsr->getend(reltimer);
+        a=(*rel)(reltimer);
     }
     return a*w;
 }

@@ -67,7 +67,8 @@ int main(){
     //profile = new NoiseProfile();
     profile = new WaveProfile(220, 880,
         new WaveformFunc(&simplesin, 2*M_PI),
-        new ADSRFunc(&simpleinit, &simpledecay, 1.2/1000.0, 1.0/10.0)
+        new AttackFunc(simpleinit, 1.2/1000.0),
+        new ReleaseFunc(simpledecay,  1.0/10.0)
     );
 
     profile->setInput(input);
