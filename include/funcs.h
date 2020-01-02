@@ -10,7 +10,7 @@ class WaveformFunc {
     public:
         float period;
 
-    WaveformFunc(float (*wave)(float), float period){
+    WaveformFunc(std::function<float(float)> wave, float period){
         this->wave = wave;
         this->period = period;
     }
@@ -51,7 +51,7 @@ class ReleaseFunc {
     }
 };
 
-float simpleinit(float i);
-float simpledecay(float i);
-float simplesin(float i);
+extern AttackFunc simpleattack;
+extern ReleaseFunc simplerelease;
+extern WaveformFunc simplesin;
 #endif

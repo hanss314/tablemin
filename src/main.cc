@@ -56,20 +56,21 @@ int main(){
     /*profile = new EnablerProfile(
         new BasicProfile(220, 880), 65
     );*/
-    /*int keys[] = {52,39,53,40,54,55,42,56,43,57,58,45,59,46,60,0};
-    profile = new MixerProfile(
+    int keys[] = {52,39,53,40,54,55,42,56,43,57,58,45,59,46,60,0};
+    /*profile = new MixerProfile(
         new KeyboardProfile(list_to_freqmap(keys, 440, pow(2.0, 1.0/12.0))),
-        new BasicProfile(220, 880)
+        new WaveProfile(220, 1760, &simplesin, &simpleattack, &simplerelease)
     );*/
     //profile = new KeyboardProfile(list_to_freqmap(keys, 440, pow(2.0, 1.0/12.0)));
 
     //profile = new DiscreteProfile(440, 880);
     //profile = new NoiseProfile();
-    profile = new WaveProfile(220, 880,
-        new WaveformFunc(&simplesin, 2*M_PI),
-        new AttackFunc(simpleinit, 1.2/1000.0),
-        new ReleaseFunc(simpledecay,  1.0/10.0)
-    );
+
+    profile = new WaveProfile(220, 880, 
+        &simplesin, &simpleattack, &simplerelease);
+    Profile *keyboard = new KeyboardProfile(list_to_freqmap(keys, 440, pow(2.0, 1.0/12.0)));
+    keyboard = new LooperProfile(keyboard, 65, rate*10);
+    profile = new MixerProfile(keyboard, profile);
 
     profile->setInput(input);
     profile->setRate(rate);

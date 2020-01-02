@@ -132,4 +132,17 @@ class MuterProfile : public ContainerProfile{
     MuterProfile(Profile *base, int key);
     float getNext() override;
 };
+class LooperProfile : public ContainerProfile{
+    protected:
+        int loopkey;
+        size_t loop_pos, buf_size, loop_len;
+        float *loop;
+        bool looping;
+        
+    public:
+    LooperProfile(Profile *base, int key, size_t length);
+    ~LooperProfile();
+    float getNext() override;
+    void onKbEvent(int, bool) override;
+};
 #endif
